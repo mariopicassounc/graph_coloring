@@ -7,7 +7,8 @@ struct LadoSt nuevo_lado(u32 x, u32 y)
     l.lado_y = y;
     return l;
 }
-/*DEBUG*/
+
+/* DEBUG */
 imprimir_lados(Lados l, u32 m){
     for (u32 i = 0; i < m ; i++){
         fprintf(stdout, "%u \t %u\n", l[i].lado_x, l[i].lado_y);
@@ -41,11 +42,13 @@ Lados cargar_lados()
     u32 x = 0, y = 0;
     u32 index = 0;
     int count = 0;
+    bool m_alcanzado = false; // Una vez alcanzado el m se trunca el grafo (por mas que hayan mas datos)
     Lados lados = NULL;
     char c;
-
-    while (fscanf(stdin, "%c", &c) != EOF)
-    {
+    
+    while ((fscanf(stdin, "%c", &c) != EOF) && !(m_alcanzado))
+    {   
+        /* Leer encabezado */
         if (c == 'p')
         {
             count = fscanf(stdin, " edge %u %u", &total_vertices, &total_lados);
@@ -54,10 +57,11 @@ Lados cargar_lados()
                 fprintf(stderr, "Error de lectura 1\n");
                 exit(EXIT_FAILURE);
             }
-            total_lados = total_lados * 2;
+            total_lados = total_lados * 2; // para grafos sin direccion: xy yx
             
             lados = construir_lados(total_lados); 
         }
+        /* Leer lados */
         else if (c == 'e')
         {
             count = fscanf(stdin, "%u %u", &x, &y);
@@ -69,6 +73,10 @@ Lados cargar_lados()
 
             lados = crear_lados(lados, index, x, y);
             index++;
+
+            if (index == total_lados){
+                m_alcanzado = true;
+            }
         }
         else if (c == 'c')
         {
@@ -79,8 +87,6 @@ Lados cargar_lados()
     imprimir_lados(lados, total_lados);
     return lados;
 }
-
-
 
 u32 NumeroDeVertices(Grafo G)
 {
