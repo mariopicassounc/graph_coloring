@@ -31,6 +31,5 @@ struct LadoSt {
 };
 
 Lados cargar_lados();
-void imprimir_lados();
 
 #endif

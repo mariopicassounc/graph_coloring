@@ -7,6 +7,12 @@ struct LadoSt nuevo_lado(u32 x, u32 y)
     l.lado_y = y;
     return l;
 }
+/*DEBUG*/
+imprimir_lados(Lados l, u32 m){
+    for (u32 i = 0; i < m ; i++){
+        fprintf(stdout, "%u \t %u\n", l[i].lado_x, l[i].lado_y);
+    }
+}
 
 /*
 Alloca memoria para crear un arreglo de tamaño total_lados
@@ -48,10 +54,9 @@ Lados cargar_lados()
                 fprintf(stderr, "Error de lectura 1\n");
                 exit(EXIT_FAILURE);
             }
-
-            printf("total_v: %d,\t total_l: %d\n", total_vertices, total_lados);
-
-            lados = construir_lados(2 * total_lados);
+            total_lados = total_lados * 2;
+            
+            lados = construir_lados(total_lados); 
         }
         else if (c == 'e')
         {
@@ -62,40 +67,42 @@ Lados cargar_lados()
                 exit(EXIT_FAILURE);
             }
 
-            printf("x: %u,\t y:%u \n", x, y);
             lados = crear_lados(lados, index, x, y);
-            ++index;
+            index++;
         }
         else if (c == 'c')
         {
-            fscanf(stdin, "%*[^\n]"); // ignore the line: %*[^\n]
+            fscanf(stdin, "%*[^\n]"); // ignorar la linea con exp reg: %*[^\n]
         }
     }
+
+    imprimir_lados(lados, total_lados);
     return lados;
 }
 
-    u32 NumeroDeVertices(Grafo G)
-    {
-        return G->numero_vertices;
-    }
 
-    u32 NumeroDeLados(Grafo G)
-    {
-        return G->numero_lados;
-    }
 
-    u32 Delta(Grafo G)
-    {
-        return G->delta;
-    }
+u32 NumeroDeVertices(Grafo G)
+{
+    return G->numero_vertices;
+}
 
-    u32 Nombre(u32 i, Grafo G)
-    {
-        return G->v[G->orden[i]].nombre;
-    }
+u32 NumeroDeLados(Grafo G)
+{
+    return G->numero_lados;
+}
 
-    u32 Grado(u32 i, Grafo G)
-    {
-        return G->v[G->orden[i]].grado;
-    }
+u32 Delta(Grafo G)
+{
+    return G->delta;
+}
 
+u32 Nombre(u32 i, Grafo G)
+{
+    return G->v[G->orden[i]].nombre;
+}
+
+u32 Grado(u32 i, Grafo G)
+{
+    return G->v[G->orden[i]].grado;
+}

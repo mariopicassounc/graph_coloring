@@ -1,9 +1,9 @@
 #include "EstructuraGrafo23.h"
+#include "APIG23.h"
 
 int main()
 {
     Lados l = cargar_lados();
-    imprimir_lados();
     free(l);
     return 0;
 }
