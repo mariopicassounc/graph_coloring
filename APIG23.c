@@ -1,12 +1,7 @@
 #include "APIG23.h"
+#include <stdbool.h>
 
-struct LadoSt nuevo_lado(u32 x, u32 y)
-{
-    struct LadoSt l;
-    l.lado_x = x;
-    l.lado_y = y;
-    return l;
-}
+
 
 /* DEBUG */
 imprimir_lados(Lados l, u32 m){
@@ -15,6 +10,15 @@ imprimir_lados(Lados l, u32 m){
     }
 }
 
+/* FUNCIONES AUXILIARES */
+
+struct LadoSt nuevo_lado(u32 x, u32 y)
+{
+    struct LadoSt l;
+    l.lado_x = x;
+    l.lado_y = y;
+    return l;
+}
 /*
 Alloca memoria para crear un arreglo de tamaño total_lados
 */

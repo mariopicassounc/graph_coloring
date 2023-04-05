@@ -5,10 +5,9 @@ typedef unsigned int u32;
 
 typedef struct VerticeSt *Vertices;
 
-typedef struct GrafoSt * Grafo;
-
 typedef struct LadoSt *Lados;
 
+typedef struct GrafoSt GrafoSt;
 
 struct VerticeSt {
     u32 nombre;

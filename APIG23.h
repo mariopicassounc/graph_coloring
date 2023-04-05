@@ -3,8 +3,9 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdbool.h>
 #include "EstructuraGrafo23.h"
+
+typedef GrafoSt *Grafo;
 
 //debe leer desde stdin
 Grafo ConstruirGrafo();
