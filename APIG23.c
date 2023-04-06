@@ -1,6 +1,8 @@
 #include "APIG23.h"
 #include <stdbool.h>
 
+u32 *vecinos;
+
 /* DEBUG */
 void imprimir_lados(Lados l, u32 m)
 {
@@ -30,7 +32,6 @@ Lados guardar_lado(Lados l, u32 i, u32 x, u32 y)
     l[2 * i + 1].lado_y = x;
     return (l);
 }
-
 
 /* Usada por qsort */
 int comparar_lados(const void *a, const void *b)
@@ -115,45 +116,41 @@ Lados cargar_lados(u32 *m, u32 *n)
 /* GRAFO */
 
 Grafo inicializar_grafo(u32 n, u32 m)
-{   
-    Grafo g = (Grafo)calloc(1, sizeof(struct GrafoSt));
-    
-    g->numero_vertices = n;
-    g->numero_lados = m;
-    g->delta = 0;
-    g->v = calloc(n, sizeof(struct VerticeSt));
+{
+    Grafo G = (Grafo)calloc(1, sizeof(struct GrafoSt));
 
-    return (g);
+    G->numero_vertices = n;
+    G->numero_lados = m;
+    G->delta = 0;
+    G->v = calloc(n, sizeof(struct VerticeSt));
+
+    return (G);
 }
 
 void cargar_grafo(Grafo g, Lados l)
 {
+    vecinos = calloc(g->numero_lados * 2, sizeof(u32));
     u32 grado = 0;
     u32 j = 0;
-    for (u32 i = 0; i < g->numero_lados * 2; i++){
-        
+    for (u32 i = 0; i < g->numero_lados * 2; i++)
+    {
+
+        vecinos[i] = l[i].lado_y;
+
         grado++;
 
         // Si el lado actual es distinto al siguiente, entonces es el ultimo lado de un vertice
-        if (l[i].lado_x != l[i+1].lado_y){
-        
-            g->v[j].grado = grado;
+        if (i != g->numero_lados * 2 && l[i].lado_x != l[i + 1].lado_x)
+        {
             g->v[j].nombre = l[i].lado_x;
-            g->v[j].vecinos = calloc(grado, sizeof(u32));
-            
-            // Asigno los vecinos
-            for(u32 k = 0; k < grado; k++){
-                g->v[j].vecinos[k] = l[i - (grado - 1) + k].lado_y;
-                // Ejemplo de i - (grado - 1) + k: 
-                // 4 - (5 - 1) + 0 = 0
-                fprintf(stdout, "%u \t %u\n", g->v[j].nombre, g->v[j].vecinos[k]);
-            }
+            g->v[j].grado = grado;
+            g->v[j].primerVecino = i - grado + 1;
 
-            // Asigno el delta del grafo
-            if(g->v[j].grado > g->delta){
-                g->delta = g->v[j].grado;
+            // Si el grado es mayor al delta, entonces actualizo el delta
+            if (grado > g->delta)
+            {
+                g->delta = grado;
             }
-
             j++;
             grado = 0;
         }
@@ -166,7 +163,7 @@ Grafo ConstruirGrafo()
 {
     u32 m, n;
     Lados l = cargar_lados(&m, &n);
-    ordenar_lados(l, 2*m);
+    ordenar_lados(l, 2 * m);
     Grafo G = inicializar_grafo(n, m);
     cargar_grafo(G, l);
     free(l);
@@ -175,14 +172,9 @@ Grafo ConstruirGrafo()
 
 void DestruirGrafo(Grafo G)
 {
-    
-    for (u32 i = 0; i < G->numero_vertices; i++)
-    {
-        free(G->v[i].vecinos);
-    }
+    free(vecinos);
     free(G->v);
     free(G);
-    
 }
 
 u32 NumeroDeVertices(Grafo G)
@@ -212,5 +204,5 @@ u32 Grado(u32 i, Grafo G)
 
 u32 IndiceVecino(u32 j, u32 i, Grafo G)
 {
-    return G->v[i].vecinos[j];
+    return vecinos[G->v[i].primerVecino + j];
 }
