@@ -3,8 +3,8 @@
 
 int main()
 {
-    Lados l = cargar_lados();
-    free(l);
+    Grafo g = ConstruirGrafo();
+    DestruirGrafo(g);
     return 0;
 }
 

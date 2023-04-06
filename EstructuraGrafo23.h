@@ -3,14 +3,16 @@
 
 typedef unsigned int u32;
 
-typedef struct VerticeSt *Vertices;
-
-typedef struct LadoSt Lado;
-
-typedef struct LadoSt *Lados;
-
+/* Renombres */
+typedef struct VerticeSt VerticeSt;
+typedef struct LadoSt LadoSt;
 typedef struct GrafoSt GrafoSt;
 
+/* Arrays */
+typedef VerticeSt *Vertices;
+typedef LadoSt *Lados;
+
+/* Estructuras */
 struct VerticeSt {
     u32 nombre;
     u32 color;
@@ -23,7 +25,6 @@ struct GrafoSt {
     u32 numero_lados;
     u32 numero_vertices;
     Vertices v;
-    u32 *orden;
 };
 
 struct LadoSt {
@@ -31,6 +32,5 @@ struct LadoSt {
     u32 lado_y;
 };
 
-Lados cargar_lados();
 
 #endif
