@@ -229,7 +229,6 @@ Grafo ConstruirGrafo()
     u32 m, n;
     Lados l = cargar_lados(&m, &n);
     ordenar_lados(l, 2 * m);
-    imprimir_lados(l, 2 * m);
     Grafo G = inicializar_grafo(n, m);
     cargar_grafo(G, l);
     free(l);

@@ -4,16 +4,6 @@
 int main()
 {
     Grafo g = ConstruirGrafo();
-    
-    /* Debug */
-
-    printf("\n\nindicesVecinos:\n");
-    for(u32 i = 0; i < g->numero_vertices; i++){
-        for(u32 j = 0; j < g->v[i].grado; j++)
-            printf("%u\n",IndiceVecino(j,i,g));
-    }
-        
-
     DestruirGrafo(g);
     return 0;
 }
