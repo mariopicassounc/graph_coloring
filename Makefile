@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -Wall -Wextra -O3 -std=c99 -g
+CFLAGS = -Wall -Wextra -std=c99 -g
 LIBS = -lm
 SRCS = APIG23.c main.c
 OBJS = $(SRCS:.c=.o)

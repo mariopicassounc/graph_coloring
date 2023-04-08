@@ -1,6 +1,7 @@
 #include "APIG23.h"
 #include <stdbool.h>
 
+u32 *vertices;
 u32 *vecinos;
 
 /* DEBUG */
@@ -127,37 +128,99 @@ Grafo inicializar_grafo(u32 n, u32 m)
     return (G);
 }
 
-void cargar_grafo(Grafo g, Lados l)
+int busqueda_b(u32 numero, u32 *arreglo, u32 n)
 {
-    u32 tamaño_vecinos = g->numero_lados * 2;
-    vecinos = calloc(tamaño_vecinos, sizeof(u32));
-    u32 grado = 0;
-    u32 j = 0;
-    u32 vertices = calloc(g->numero_vertices, sizeof(u32));
-    
-    for (u32 i = 0; i < tamaño_vecinos; i++){
-        grado++;
+    u32 inicio = 0;
+    u32 medio = n - 1;
+    u32 fin = n - 1;
 
-        if((l[i].lado_x != l[i+1].lado_x) && i < tamaño_vecinos){
-            
-            // cargar vertice en vertices[] de tamaño n para marcar su indice, 
-            // guardar grado de cada vertice, Nombre, delta y PrimerVecino
-            grado = 0;
+    while (inicio <= fin) {
+        medio = (inicio + fin) / 2;
+        if (arreglo[medio] == numero) {
+            return medio;
+        }
+        else if (arreglo[medio] < numero) {
+            inicio = medio + 1;
+        }
+        else {
+            fin = medio - 1;
         }
     }
-    // O(m)
-    
 
-    for (u32 i = 0; i < tamaño_vecinos; i++){
-        // guardo vecinos entre el PrimerVecino y el (PrimerVecino + grado), pero
-        // para guardarlos tengo que hacer busqueda binaria dentro de una funcion
-        // indice_vertice = obtener_indice_vertice(Nombre del vecino, Array vertices)
-        // vertices[i] = indice_vertice
-    
+    return -1;
+}
+
+void cargar_grafo(Grafo g, Lados l)
+{
+    u32 tamaño_vecinos = (g->numero_lados * 2) + g->numero_vertices;
+    vecinos = calloc(tamaño_vecinos, sizeof(u32));    
+    vertices = calloc(g->numero_vertices, sizeof(u32));
+    u32 grado = 0;
+    u32 i = 0;
+    u32 vertice_i = 0;
+    u32 flag = 0;
+    int result_busqueda = -1;
+
+    /* Completamos el arreglo global vecinos */
+    for(u32 index = 0; index < tamaño_vecinos; index++)
+    {
+        if(flag == 0)
+        {
+            vecinos[index] = l[i].lado_y;
+            grado++;
+        }
+
+        /* Si estoy en el último vecino de un vertice*/
+        if(l[i].lado_x != l[i+1].lado_x)
+        {
+            /* Generamos un espacio para el caso (x,x) */
+            if(index == i + vertice_i + 1)
+            {
+                vecinos[index] = l[i].lado_x;
+
+                /* Guardamos grado de cada vertice, Nombre, delta y PrimerVecino */
+                g->v[vertice_i].nombre = l[i].lado_x;
+                g->v[vertice_i].grado = grado;
+                g->v[vertice_i].primerVecino = index - grado;
+
+                /* Actualizamos delta */
+                if(grado > g->delta)
+                    g->delta = grado;
+
+                /* reseteamos para siguiente tanda de vecinos */
+                vertice_i++;
+                grado = 0;
+                flag = 0;
+                i++;
+            }
+            else
+                flag = 1;
+        }
+        else
+            i++;
     }
-    // O(m log n)
+    // O(2m + n)
+
+    /* Completamos el arreglo global vertices */
+    for(u32 i = 0; i < g->numero_vertices; i++)
+        vertices[i] = vecinos[g->v[i].primerVecino+g->v[i].grado];
+    // O(n)
+
+    /*  Tranformamos los nombre del arreglo vecino por sus correspondientes
+        indices  */
+    for(u32 i=0; i < tamaño_vecinos; i++){
+        result_busqueda = busqueda_b(vecinos[i], vertices, g->numero_vertices);
+        if(result_busqueda == -1){
+            fprintf(stderr, "Error de busqueda\n");
+            exit(EXIT_FAILURE);
+        }
+
+        vecinos[i] = result_busqueda;
+    }
+    // O((2m + n) log n)
     
 }
+// Si m >= n & Dios quiere --> O(m log n)
 
 /* FUNCIONES DE LA API */
 
