@@ -129,32 +129,34 @@ Grafo inicializar_grafo(u32 n, u32 m)
 
 void cargar_grafo(Grafo g, Lados l)
 {
-    vecinos = calloc(g->numero_lados * 2, sizeof(u32));
+    u32 tamaño_vecinos = g->numero_lados * 2;
+    vecinos = calloc(tamaño_vecinos, sizeof(u32));
     u32 grado = 0;
     u32 j = 0;
-    for (u32 i = 0; i < g->numero_lados * 2; i++)
-    {
-
-        vecinos[i] = l[i].lado_y;
-
+    u32 vertices = calloc(g->numero_vertices, sizeof(u32));
+    
+    for (u32 i = 0; i < tamaño_vecinos; i++){
         grado++;
 
-        // Si el lado actual es distinto al siguiente, entonces es el ultimo lado de un vertice
-        if (i != g->numero_lados * 2 && l[i].lado_x != l[i + 1].lado_x)
-        {
-            g->v[j].nombre = l[i].lado_x;
-            g->v[j].grado = grado;
-            g->v[j].primerVecino = i - grado + 1;
-
-            // Si el grado es mayor al delta, entonces actualizo el delta
-            if (grado > g->delta)
-            {
-                g->delta = grado;
-            }
-            j++;
+        if((l[i].lado_x != l[i+1].lado_x) && i < tamaño_vecinos){
+            
+            // cargar vertice en vertices[] de tamaño n para marcar su indice, 
+            // guardar grado de cada vertice, Nombre, delta y PrimerVecino
             grado = 0;
         }
     }
+    // O(m)
+    
+
+    for (u32 i = 0; i < tamaño_vecinos; i++){
+        // guardo vecinos entre el PrimerVecino y el (PrimerVecino + grado), pero
+        // para guardarlos tengo que hacer busqueda binaria dentro de una funcion
+        // indice_vertice = obtener_indice_vertice(Nombre del vecino, Array vertices)
+        // vertices[i] = indice_vertice
+    
+    }
+    // O(m log n)
+    
 }
 
 /* FUNCIONES DE LA API */
@@ -164,6 +166,7 @@ Grafo ConstruirGrafo()
     u32 m, n;
     Lados l = cargar_lados(&m, &n);
     ordenar_lados(l, 2 * m);
+    imprimir_lados(l, 2 * m);
     Grafo G = inicializar_grafo(n, m);
     cargar_grafo(G, l);
     free(l);
