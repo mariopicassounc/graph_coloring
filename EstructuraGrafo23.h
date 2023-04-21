@@ -15,7 +15,6 @@ typedef LadoSt *Lados;
 /* Estructuras */
 struct VerticeSt {
     u32 nombre;
-    u32 color;
     u32 grado;
     u32 primerVecino;
 };

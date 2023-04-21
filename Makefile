@@ -1,9 +1,9 @@
 CC = gcc
 CFLAGS = -Wall -Wextra -std=c99 -g
 LIBS = -lm
-SRCS = APIG23.c main.c
+SRCS = APIG23.c APIParte2.c main.c
 OBJS = $(SRCS:.c=.o)
-DEPS = APIG23.h EstructuraGrafo23.h
+DEPS = APIG23.h EstructuraGrafo23.h EstructuraParte2.h
 TARGET = grafo
 
 all: $(TARGET)

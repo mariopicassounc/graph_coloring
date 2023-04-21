@@ -1,10 +1,17 @@
 #include "APIG23.h"
 #include <stdbool.h>
+#include <assert.h>
 
-u32 *vertices;
 u32 *vecinos;
 
 /* DEBUG */
+void imprimir_vertices (Grafo g){
+    printf("\nvertices:\n");
+    for (u32 i = 0; i < g->numero_vertices; i++)
+    {
+        printf("Vertice: %u \t Grado: %u \n", g->v[i].nombre, g->v[i].grado);
+    }
+}
 void imprimir_lados(Lados l, u32 m)
 {
     for (u32 i = 0; i < m; i++)
@@ -12,6 +19,7 @@ void imprimir_lados(Lados l, u32 m)
         fprintf(stdout, "%u \t %u\n", l[i].lado_x, l[i].lado_y);
     }
 }
+
 
 /* FUNCIONES AUXILIARES */
 
@@ -128,21 +136,27 @@ Grafo inicializar_grafo(u32 n, u32 m)
     return (G);
 }
 
-int busqueda_b(u32 numero, u32 *arreglo, u32 n)
+int busqueda_binaria_vertices(u32 numero, Grafo g)
 {
-    u32 inicio = 0;
-    u32 medio = n - 1;
-    u32 fin = n - 1;
+    assert(g != NULL);
 
-    while (inicio <= fin) {
+    u32 inicio = 0;
+    u32 medio = g->numero_vertices - 1;
+    u32 fin = g->numero_vertices - 1;
+
+    while (inicio <= fin)
+    {
         medio = (inicio + fin) / 2;
-        if (arreglo[medio] == numero) {
+        if (g->v[medio].nombre == numero)
+        {
             return medio;
         }
-        else if (arreglo[medio] < numero) {
+        else if (g->v[medio].nombre < numero)
+        {
             inicio = medio + 1;
         }
-        else {
+        else
+        {
             fin = medio - 1;
         }
     }
@@ -152,75 +166,63 @@ int busqueda_b(u32 numero, u32 *arreglo, u32 n)
 
 void cargar_grafo(Grafo g, Lados l)
 {
-    u32 tamaño_vecinos = (g->numero_lados * 2) + g->numero_vertices;
-    vecinos = calloc(tamaño_vecinos, sizeof(u32));    
-    vertices = calloc(g->numero_vertices, sizeof(u32));
+    assert(g != NULL);
+    
+    u32 tamaño_vecinos = (g->numero_lados * 2);
+    vecinos = calloc(tamaño_vecinos, sizeof(u32));
     u32 grado = 0;
-    u32 i = 0;
     u32 vertice_i = 0;
-    u32 flag = 0;
-    int result_busqueda = -1;
+    int indice_vecino = -1;
 
     /* Completamos el arreglo global vecinos */
-    for(u32 index = 0; index < tamaño_vecinos; index++)
+    for (u32 i = 0; i < tamaño_vecinos; i++)
     {
-        if(flag == 0)
-        {
-            vecinos[index] = l[i].lado_y;
-            grado++;
-        }
+        vecinos[i] = l[i].lado_y; // guardo el nombre del vecino
+        grado++;
 
         /* Si estoy en el último vecino de un vertice*/
-        if(l[i].lado_x != l[i+1].lado_x)
+        if (l[i].lado_x != l[i + 1].lado_x && i < tamaño_vecinos - 1)
         {
-            /* Generamos un espacio para el caso (x,x) */
-            if(index == i + vertice_i + 1)
+            /* Guardamos grado de cada vertice, Nombre, delta y PrimerVecino */
+            g->v[vertice_i].nombre = l[i].lado_x;
+            g->v[vertice_i].grado = grado;
+            g->v[vertice_i].primerVecino = i - (grado - 1);
+
+            /* Actualizamos delta */
+            if (grado > g->delta)
             {
-                vecinos[index] = l[i].lado_x;
-
-                /* Guardamos grado de cada vertice, Nombre, delta y PrimerVecino */
-                g->v[vertice_i].nombre = l[i].lado_x;
-                g->v[vertice_i].grado = grado;
-                g->v[vertice_i].primerVecino = index - grado;
-
-                /* Actualizamos delta */
-                if(grado > g->delta)
-                    g->delta = grado;
-
-                /* reseteamos para siguiente tanda de vecinos */
-                vertice_i++;
-                grado = 0;
-                flag = 0;
-                i++;
+                g->delta = grado;
             }
-            else
-                flag = 1;
+
+            /* Reseteamos para siguiente tanda de vecinos */
+            vertice_i++;
+            grado = 0;
         }
-        else
-            i++;
+
+        /* Guardo el ultimo vértice */
+        else if (i == tamaño_vecinos - 1)
+        {
+            g->v[vertice_i].nombre = l[i].lado_x;
+            g->v[vertice_i].grado = grado;
+            g->v[vertice_i].primerVecino = i - (grado - 1);
+        }
     }
-    // O(2m + n)
-
-    /* Completamos el arreglo global vertices */
-    for(u32 i = 0; i < g->numero_vertices; i++)
-        vertices[i] = vecinos[g->v[i].primerVecino+g->v[i].grado];
-    // O(n)
-
-    /*  Tranformamos los nombre del arreglo vecino por sus correspondientes
-        indices  */
-    for(u32 i=0; i < tamaño_vecinos; i++){
-        result_busqueda = busqueda_b(vecinos[i], vertices, g->numero_vertices);
-        if(result_busqueda == -1){
+    /* O(2m + n) */
+    /* Tranformamos los nombre del arreglo vecino por sus correspondientes indices */
+    for (u32 i = 0; i < tamaño_vecinos; i++)
+    {
+        indice_vecino = busqueda_binaria_vertices(vecinos[i], g);
+        if (indice_vecino == -1)
+        {
+            printf("%u  %u  %u\n", i, vecinos[i], indice_vecino);
             fprintf(stderr, "Error de busqueda\n");
             exit(EXIT_FAILURE);
         }
-
-        vecinos[i] = result_busqueda;
+        
+        vecinos[i] = indice_vecino;
     }
-    // O((2m + n) log n)
-    
+    // O(2m log n)
 }
-// Si m >= n & Dios quiere --> O(m log n)
 
 /* FUNCIONES DE LA API */
 
