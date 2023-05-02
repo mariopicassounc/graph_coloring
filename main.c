@@ -3,9 +3,16 @@
 #include "APIG23.h"
 #include "APIParte2.h"
 
-u32 *ColoresDisponible;
 u32 *Color;
 u32 *Orden;
+
+void imprimirOrden(u32 *Orden, Grafo g)
+{
+    printf("Orden: ");
+    for (u32 i = 0; i < NumeroDeVertices(g); i++)
+        printf("%u ", Orden[i]);
+    printf("\n");
+}
 
 void imprimir_vecinos(Grafo g)
 {
@@ -39,7 +46,7 @@ void OrdenNatural(u32 n, u32 *Orden)
 }
 
 // setea todos los colores como no coloreados, que para nosotros seria el valor (2^32-1)
-void NoColoreado(u32 n, u32 Color[])
+void setearNoColoreado(u32 n, u32 Color[])
 {
     for (u32 i = 0; i < n; i++)
         Color[i] = NC;
@@ -66,13 +73,20 @@ int main()
         exit(1);
     }
 
+    
     OrdenNatural(g->numero_vertices, Orden);
-
+    
+    /* Corro Greedy con orden natural */
+    setearNoColoreado(g->numero_vertices, Color);
     numero_colores = Greedy(g, Orden, Color);
-
     printf("\nNumero de colores: %u\n", numero_colores);
-
     imprimirColores(Color, g);
+
+    // numero_colores = Greedy(g, Orden, Color);
+
+    // printf("\nNumero de colores: %u\n", numero_colores);
+
+    // imprimirColores(Color, g);
     /*
     rellenar Orden[] con Orden natural Orden[0] = 0
     correr greedy en orden natural

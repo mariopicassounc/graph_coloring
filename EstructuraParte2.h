@@ -5,7 +5,6 @@
 
 typedef unsigned int u32;
 
-extern u32 *ColoresDisponible;
 extern u32 *Color;
 extern u32 *Orden;
 
