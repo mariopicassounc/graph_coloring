@@ -75,27 +75,17 @@ int main()
     }
 
     
-    OrdenNatural(g->numero_vertices, Orden);
+    OrdenJedi(g, Orden, Color);
     
-    /* Corro Greedy con orden natural */
+    /* Corro Greedy con orden Jedi */
     setearNoColoreado(g->numero_vertices, Color);
+
     numero_colores = Greedy(g, Orden, Color);
+
     printf("\nNumero de colores: %u\n", numero_colores);
     imprimirColores(Color, g);
 
-    // numero_colores = Greedy(g, Orden, Color);
-
-    // printf("\nNumero de colores: %u\n", numero_colores);
-
-    // imprimirColores(Color, g);
-    /*
-    rellenar Orden[] con Orden natural Orden[0] = 0
-    correr greedy en orden natural
-    reordenar Orden[] con ImparPar
-    Correr greedy en el nuevo orden
-    reordenar Orden[] con Jedi
-    Correr greedy en el nuevo orden
-    */
+    
     DestruirGrafo(g);
     return 0;
 }

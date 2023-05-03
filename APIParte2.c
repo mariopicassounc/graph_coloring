@@ -2,7 +2,7 @@
 #include <string.h>
 #include "APIParte2.h"
 #define NC (2 ^ 32) - 1
-u32 *AuxColor;
+u32 *AuxComp;
 
 /* DEBUG */
 static void imprimirColoresDisponibles(char *ColoresDisponibles, Grafo g)
@@ -15,20 +15,20 @@ static void imprimirColoresDisponibles(char *ColoresDisponibles, Grafo g)
     printf("\n");
 }
 
-static int compararColor(const void *a, const void *b)
+static int compararVal(const void *a, const void *b)
 {
     /* Primero los impares luego los pares. */
-    u32 a_color = AuxColor[*(u32 *)a];
-    u32 b_color = AuxColor[*(u32 *)b];
+    u32 a_val = AuxComp[*(u32 *)a];
+    u32 b_val = AuxComp[*(u32 *)b];
 
-    return b_color - a_color;
+    return b_val - a_val;
 }
 
 static int compararColorParidad(const void *a, const void *b)
 {
     /* Primero los impares luego los pares. */
-    u32 a_color = AuxColor[*(u32 *)a];
-    u32 b_color = AuxColor[*(u32 *)b];
+    u32 a_color = AuxComp[*(u32 *)a];
+    u32 b_color = AuxComp[*(u32 *)b];
     bool a_paridad_color = (a_color % 2);
     bool b_paridad_color = (b_color % 2);
 
@@ -162,23 +162,30 @@ u32 Greedy(Grafo G, u32 *Orden, u32 *Color)
 
 char OrdenImparPar(u32 n, u32 *Orden, u32 *Color)
 {
-    AuxColor = Color;
+    AuxComp = Color;
     qsort(Orden, n, sizeof(u32), compararColorParidad);
-    return 0;
+    return (char)0;
 }
 
 char OrdenColor(u32 n, u32 *Orden, u32 *Color)
 {
-    AuxColor = Color;
-    qsort(Orden, n, sizeof(u32), compararColor);
-    return 0;
+    AuxComp = Color;
+    qsort(Orden, n, sizeof(u32), compararVal);
+    return (char)0;
+}
+
+char OrdenF(u32 n, u32 *Orden, u32 *F)
+{
+    AuxComp = F;
+    qsort(Orden, n, sizeof(u32), compararVal);
+    return (char)0;
 }
 
 char OrdenJedi(Grafo G,u32* Orden,u32* Color)
 {
     OrdenColor(NumeroDeVertices(G), Orden, Color);
     u32 *resultF = mapF(G, Orden, Color);
-    OrdenF(resultF);
+    OrdenF(NumeroDeVertices(G), Orden, resultF);
     free(resultF);
     return 0;
 }
