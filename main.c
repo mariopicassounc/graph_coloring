@@ -73,19 +73,32 @@ int main()
         printf("Error al reservar memoria para Color\n");
         exit(1);
     }
-
-    
-    OrdenJedi(g, Orden, Color);
-    
-    /* Corro Greedy con orden Jedi */
+ 
+    printf("\n\n");
+    printf("Orden Natural: \n");
+    OrdenNatural(g->numero_vertices, Orden);
+    /* Corro Greedy con orden natural */
     setearNoColoreado(g->numero_vertices, Color);
-
     numero_colores = Greedy(g, Orden, Color);
-
     printf("\nNumero de colores: %u\n", numero_colores);
     imprimirColores(Color, g);
 
-    
+    printf("\n\n");
+    printf("Orden ImparPar: \n");
+    OrdenImparPar(g->numero_vertices, Orden, Color);
+    /* Corro Greedy con orden natural */
+    numero_colores = Greedy(g, Orden, Color);
+    printf("\nNumero de colores: %u\n", numero_colores);
+    imprimirColores(Color, g);
+
+    printf("\n\n");
+    printf("Orden Jedi: \n");
+    OrdenJedi(g, Orden, Color);
+    /* Corro Greedy con orden Jedi */
+    numero_colores = Greedy(g, Orden, Color);
+    printf("\nNumero de colores: %u\n", numero_colores);
+    imprimirColores(Color, g);
+
     DestruirGrafo(g);
     return 0;
 }

@@ -5,19 +5,31 @@
 u32 *AuxComp;
 
 /* DEBUG */
-static void imprimirColoresDisponibles(char *ColoresDisponibles, Grafo g)
-{
-    printf("Colores disponibles: ");
-    for (u32 i = 0; i < Delta(g) + 1; i++)
-    {
-        printf("%u ", ColoresDisponibles[i]);
-    }
-    printf("\n");
+// static void imprimirColoresDisponibles(char *ColoresDisponibles, Grafo g)
+// {
+//     printf("Colores disponibles: ");
+//     for (u32 i = 0; i < Delta(g) + 1; i++)
+//     {
+//         printf("%u ", ColoresDisponibles[i]);
+//     }
+//     printf("\n");
+// }
+
+static int comparar(const void *a, const void *b) {
+   int elemento1 = *(const int *)a;
+   int elemento2 = *(const int *)b;
+   
+   if (elemento1 > elemento2) {
+      return -1;
+   } else if (elemento1 < elemento2) {
+      return 1;
+   } else {
+      return 0;
+   }
 }
 
 static int compararVal(const void *a, const void *b)
 {
-    /* Primero los impares luego los pares. */
     u32 a_val = AuxComp[*(u32 *)a];
     u32 b_val = AuxComp[*(u32 *)b];
 
@@ -131,7 +143,7 @@ u32 Greedy(Grafo G, u32 *Orden, u32 *Color)
                 ColoresDisponibles[Color[IndiceVecino(j, vertice_i, G)]] = 1;
             }
         }
-        imprimirColoresDisponibles(ColoresDisponibles, G);
+        // imprimirColoresDisponibles(ColoresDisponibles, G);
 
         /* Buscamos el menor color disponible (primer 0 en el array) */
         for (u32 i = 0; i < Delta(G) + 1; i++)
@@ -167,25 +179,19 @@ char OrdenImparPar(u32 n, u32 *Orden, u32 *Color)
     return (char)0;
 }
 
-char OrdenColor(u32 n, u32 *Orden, u32 *Color)
+char OrdenConReferencia(u32 n, u32 *ord, u32 *ref)
 {
-    AuxComp = Color;
-    qsort(Orden, n, sizeof(u32), compararVal);
-    return (char)0;
-}
-
-char OrdenF(u32 n, u32 *Orden, u32 *F)
-{
-    AuxComp = F;
-    qsort(Orden, n, sizeof(u32), compararVal);
+    AuxComp = ref;
+    qsort(ord, n, sizeof(u32), compararVal);
     return (char)0;
 }
 
 char OrdenJedi(Grafo G,u32* Orden,u32* Color)
 {
-    OrdenColor(NumeroDeVertices(G), Orden, Color);
+    OrdenConReferencia(NumeroDeVertices(G), Orden, Color);
+    qsort(Color, NumeroDeVertices(G), sizeof(u32), comparar);
     u32 *resultF = mapF(G, Orden, Color);
-    OrdenF(NumeroDeVertices(G), Orden, resultF);
+    OrdenConReferencia(NumeroDeVertices(G), Orden, resultF);
     free(resultF);
     return 0;
 }
