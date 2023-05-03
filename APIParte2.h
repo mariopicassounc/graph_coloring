@@ -3,7 +3,6 @@
 
 
 #include "APIG23.h" 
-#include "EstructuraParte2.h"
 
 //se asume que Orden y Color tienen alocadas las cantidades correctas de memoria
 

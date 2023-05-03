@@ -2,6 +2,7 @@
 #include "EstructuraGrafo23.h"
 #include "APIG23.h"
 #include "APIParte2.h"
+#define NC (2 ^ 32) - 1
 
 u32 *Color;
 u32 *Orden;

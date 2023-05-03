@@ -1,61 +1,48 @@
 #include <stdbool.h>
 #include <string.h>
-#include "APIG23.h"
 #include "APIParte2.h"
-#include "EstructuraParte2.h"
-
-#define print_bits(x)                                    \
-    do                                                   \
-    {                                                    \
-        unsigned long long a__ = (x);                    \
-        size_t bits__ = sizeof(x) * 8;                   \
-        printf(#x ": ");                                 \
-        while (bits__--)                                 \
-            putchar(a__ & (1ULL << bits__) ? '1' : '0'); \
-        putchar('\n');                                   \
-    } while (0)
+#define NC (2 ^ 32) - 1
+u32 *AuxColor;
 
 /* DEBUG */
-void imprimirColoresDisponibles(long long *ColoresDisponibles, Grafo g)
+static void imprimirColoresDisponibles(char *ColoresDisponibles, Grafo g)
 {
     printf("Colores disponibles: ");
-    for (u32 i = 0; i < (Delta(g) / 64) + 1; i++)
+    for (u32 i = 0; i < Delta(g) + 1; i++)
     {
-        print_bits(ColoresDisponibles[i]);
-        printf(" ");
+        printf("%u ", ColoresDisponibles[i]);
     }
     printf("\n");
 }
 
-void imprimirBits(size_t const size, void const *const ptr)
+static int compararColorParidad(const void *a, const void *b)
 {
-    unsigned char *b = (unsigned char *)ptr;
-    unsigned char byte;
-    int i, j;
+    /* Primero los impares luego los pares. */
+    u32 a_color = AuxColor[*(u32 *)a];
+    u32 b_color = AuxColor[*(u32 *)b];
+    bool a_paridad_color = (a_color % 2);
+    bool b_paridad_color = (b_color % 2);
 
-    for (i = size - 1; i >= 0; i--)
-    {
-        for (j = 7; j >= 0; j--)
-        {
-            byte = (b[i] >> j) & 1;
-            printf("%u", byte);
-        }
-    }
-    puts("");
-}
+    /* Si ambos tienen la misma paridad, los ordenamos en base a su valor numerico */
+    if (a_paridad_color == b_paridad_color)
+        return b_color - a_color;
 
-/* QSORT */
-int comparar_colores(const void *a, const void *b)
-{
-    u32 *x = (u32 *)a;
-    u32 *y = (u32 *)b;
-    return Color[*x] - Color[*y];
+    else if (a_paridad_color)
+        return -1;
+
+    else
+        return 1;
 }
 
 u32 Greedy(Grafo G, u32 *Orden, u32 *Color)
 {
-    /* Declaramos un bitmap del tamaño delta de G + 1*/
-    long long *ColoresDisponibles = calloc((Delta(G) / 64) + 1, sizeof(u32));
+    /*
+    Se nos complico hacer andar Greedy con un bitmap real pero con tiempo se puede y quedaría mas rápido
+    Se puede hacer uso de funciones de gcc como __builtin_clz(bitmap) que devuelve la posicion del primer 0
+    y estan super optimizadas.
+
+    Declaramos un "bitmap" del tamaño delta de G + 1 */
+    char *ColoresDisponibles = calloc(Delta(G) + 1, sizeof(u32));
     if (ColoresDisponibles == NULL)
     {
         printf("Error al reservar memoria para ColoresDisponibles\n");
@@ -72,31 +59,31 @@ u32 Greedy(Grafo G, u32 *Orden, u32 *Color)
     {
         vertice_i = Orden[i];
 
-        /* En este bitmap los colores libres estan en 0 y los ocupados en 1 */
-        memset(ColoresDisponibles, 0, (Delta(G) / 64) + 1);
+        /* En el array los colores libres estan en 0 y los ocupados en 1 */
+        memset(ColoresDisponibles, 0, Delta(G) + 1);
 
         /* Seteamos los colores disponibles segun los colores de los vecinos del vertice_i */
         for (u32 j = 0; j < Grado(vertice_i, G); j++)
         {
             if (j == 0)
             {
-                ColoresDisponibles[0] |= 1 << 31;
+                ColoresDisponibles[0] = 1;
             }
-            /* Si un vertice tiene color entonces marco que color es en el bitmap*/
+            /* Si un vertice tiene color entonces marco que color es en el bitmap */
             else if (Color[IndiceVecino(j, vertice_i, G)] != NC)
             {
-                ColoresDisponibles[Color[IndiceVecino(j, vertice_i, G)] / 64] |= 1 << (Color[IndiceVecino(j, vertice_i, G)] % 64);
+                ColoresDisponibles[Color[IndiceVecino(j, vertice_i, G)]] = 1;
             }
         }
         imprimirColoresDisponibles(ColoresDisponibles, G);
 
         /* Buscamos el menor color disponible (primer 0 en el array) */
-        for (u32 i = 0; i < (Delta(G) / 64) + 1; i++)
+        for (u32 i = 0; i < Delta(G) + 1; i++)
         {
-            if (ColoresDisponibles[i] != 0)
+            if (ColoresDisponibles[i] == 0)
             {
-                menor_color_disponible = __builtin_clz(~ColoresDisponibles[i]);
-                menor_color_disponible = 64 * i + menor_color_disponible;
+                menor_color_disponible = i;
+                break;
             }
         }
 
@@ -113,16 +100,9 @@ u32 Greedy(Grafo G, u32 *Orden, u32 *Color)
     return numero_colores;
 }
 
-// char OrdenImparPar(u32 n, u32 *Orden, u32 *Color)
-// {
-//     /* Crear un array para ordenar los vertices de mayor a menor segun su color */
-//     u32 *OrdenAux = calloc(n, sizeof(u32));
-//     if (OrdenAux == NULL)
-//     {
-//         printf("Error al reservar memoria para OrdenAux\n");
-//         exit(1);
-//     }
-//     /* Ordenar los vertices de mayor a menor segun su color con qsort */
-//     qsort(OrdenAux, n, sizeof(u32), comparar_colores);
-
-// }
+char OrdenImparPar(u32 n, u32 *Orden, u32 *Color)
+{
+    AuxColor = Color;
+    qsort(Orden, n, sizeof(u32), compararColorParidad);
+    return 0;
+}
