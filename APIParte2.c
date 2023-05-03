@@ -15,6 +15,15 @@ static void imprimirColoresDisponibles(char *ColoresDisponibles, Grafo g)
     printf("\n");
 }
 
+static int compararColor(const void *a, const void *b)
+{
+    /* Primero los impares luego los pares. */
+    u32 a_color = AuxColor[*(u32 *)a];
+    u32 b_color = AuxColor[*(u32 *)b];
+
+    return b_color - a_color;
+}
+
 static int compararColorParidad(const void *a, const void *b)
 {
     /* Primero los impares luego los pares. */
@@ -104,5 +113,12 @@ char OrdenImparPar(u32 n, u32 *Orden, u32 *Color)
 {
     AuxColor = Color;
     qsort(Orden, n, sizeof(u32), compararColorParidad);
+    return 0;
+}
+
+char OrdenColor(u32 n, u32 *Orden, u32 *Color)
+{
+    AuxColor = Color;
+    qsort(Orden, n, sizeof(u32), compararColor);
     return 0;
 }
