@@ -43,6 +43,53 @@ static int compararColorParidad(const void *a, const void *b)
         return 1;
 }
 
+u32* mapF(Grafo G,u32* Orden,u32* Color)
+{
+    u32 empieza = 0;
+    u32 valAcumulado = 0;
+    u32 *resultF = calloc(NumeroDeVertices(G), sizeof(u32));
+
+    for(u32 i=0; i<NumeroDeVertices(G)-1; i++)
+    {
+        // Tratamos el último elemento
+        if(i == (NumeroDeVertices(G)-1))
+        {
+            if(Color[i] != Color[i-1])
+                resultF[i] = Grado(Orden[i], G) * Color[i];
+            else
+            {
+                valAcumulado += Grado(Orden[i], G);
+                valAcumulado *= Color[i];
+                for(u32 j = empieza; j < (i+1); j++)
+                {
+                    resultF[j] = valAcumulado;
+                }
+            }
+        }
+        // Tratamos el resto de los elementos
+        else
+        {
+            valAcumulado += Grado(Orden[i], G);
+
+            if(Color[i] != Color[i+1])
+            {
+                valAcumulado *= Color[i];
+                
+                for(u32 j = empieza; j < (i+1); j++)
+                {
+                    resultF[j] = valAcumulado;
+                }
+
+                valAcumulado = 0;
+                empieza = i+1;
+            }
+        }
+    }
+
+    return resultF;
+
+}
+
 u32 Greedy(Grafo G, u32 *Orden, u32 *Color)
 {
     /*
@@ -109,6 +156,10 @@ u32 Greedy(Grafo G, u32 *Orden, u32 *Color)
     return numero_colores;
 }
 
+/*
+    Ordenes
+*/
+
 char OrdenImparPar(u32 n, u32 *Orden, u32 *Color)
 {
     AuxColor = Color;
@@ -125,19 +176,9 @@ char OrdenColor(u32 n, u32 *Orden, u32 *Color)
 
 char OrdenJedi(Grafo G,u32* Orden,u32* Color)
 {
-    AuxColor = Color;
-    u32 *resultF = calloc(Delta(G) + 1, sizeof(u32));
     OrdenColor(NumeroDeVertices(G), Orden, Color);
-    u32 j = 0;
-
-    // Aplicamos la función F a los vertices con mismo color
-    for(u32 i = 0; i < NumeroDeVertices(G)-1; i++)
-    {
-        resultF[j] += Grado(i,G);
-        if(Color[i] != Color[i+1])
-        {
-            j++;
-        }
-    }   
+    u32 *resultF = mapF(G, Orden, Color);
+    OrdenF(resultF);
+    free(resultF);
     return 0;
 }
