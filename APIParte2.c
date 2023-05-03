@@ -122,3 +122,22 @@ char OrdenColor(u32 n, u32 *Orden, u32 *Color)
     qsort(Orden, n, sizeof(u32), compararColor);
     return 0;
 }
+
+char OrdenJedi(Grafo G,u32* Orden,u32* Color)
+{
+    AuxColor = Color;
+    u32 *resultF = calloc(Delta(G) + 1, sizeof(u32));
+    OrdenColor(NumeroDeVertices(G), Orden, Color);
+    u32 j = 0;
+
+    // Aplicamos la función F a los vertices con mismo color
+    for(u32 i = 0; i < NumeroDeVertices(G)-1; i++)
+    {
+        resultF[j] += Grado(i,G);
+        if(Color[i] != Color[i+1])
+        {
+            j++;
+        }
+    }   
+    return 0;
+}
