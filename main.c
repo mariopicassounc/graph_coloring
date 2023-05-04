@@ -7,11 +7,11 @@
 u32 *Color;
 u32 *Orden;
 
-void imprimirOrden(u32 *Orden, Grafo g)
+void imprimirOrden(Grafo g)
 {
     printf("Orden: ");
     for (u32 i = 0; i < NumeroDeVertices(g); i++)
-        printf("%u ", Orden[i]);
+        printf("%u %u \t", Orden[i], Color[Orden[i]]);
     printf("\n");
 }
 
@@ -29,7 +29,7 @@ void imprimir_vecinos(Grafo g)
     }
 }
 
-void imprimirColores(u32 *Color, Grafo g)
+void imprimirColores(Grafo g)
 {
     assert(Color != NULL && g != NULL);
 
@@ -40,14 +40,14 @@ void imprimirColores(u32 *Color, Grafo g)
     }
 }
 
-void OrdenNatural(u32 n, u32 *Orden)
+void OrdenNatural(u32 n)
 {
     for (u32 i = 0; i < n; i++)
         Orden[i] = i;
 }
 
 // setea todos los colores como no coloreados, que para nosotros seria el valor (2^32-1)
-void setearNoColoreado(u32 n, u32 Color[])
+void setearNoColoreado(u32 n)
 {
     for (u32 i = 0; i < n; i++)
         Color[i] = NC;
@@ -58,7 +58,6 @@ int main()
     u32 numero_colores = 0;
     Grafo g = ConstruirGrafo();
     printf("Delta: %u\n", g->delta);
-    imprimir_vecinos(g);
 
     Orden = calloc(g->numero_vertices, sizeof(u32));
     if (Orden == NULL)
@@ -74,31 +73,25 @@ int main()
         exit(1);
     }
  
-    printf("\n\n");
-    printf("Orden Natural: \n");
-    OrdenNatural(g->numero_vertices, Orden);
+    OrdenNatural(g->numero_vertices);
     /* Corro Greedy con orden natural */
-    setearNoColoreado(g->numero_vertices, Color);
+    setearNoColoreado(g->numero_vertices);
     numero_colores = Greedy(g, Orden, Color);
-    printf("\nNumero de colores: %u\n", numero_colores);
-    imprimirColores(Color, g);
 
-    printf("\n\n");
-    printf("Orden ImparPar: \n");
+    printf("\nNumero de colores: %u\n", numero_colores);
+    
     OrdenImparPar(g->numero_vertices, Orden, Color);
+
     /* Corro Greedy con orden natural */
     numero_colores = Greedy(g, Orden, Color);
     printf("\nNumero de colores: %u\n", numero_colores);
-    imprimirColores(Color, g);
+  
+    OrdenImparPar(g->numero_vertices, Orden, Color);
 
-    printf("\n\n");
-    printf("Orden Jedi: \n");
-    OrdenJedi(g, Orden, Color);
-    /* Corro Greedy con orden Jedi */
+    /* Corro Greedy con orden natural */
     numero_colores = Greedy(g, Orden, Color);
     printf("\nNumero de colores: %u\n", numero_colores);
-    imprimirColores(Color, g);
-
+   
     DestruirGrafo(g);
     return 0;
 }

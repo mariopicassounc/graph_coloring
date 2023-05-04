@@ -1,8 +1,9 @@
 #include <stdbool.h>
 #include <string.h>
 #include "APIParte2.h"
-#define NC (2 ^ 32) - 1
-u32 *AuxComp;
+#define NC __UINT32_MAX__
+u32 *AuxColor;
+u32 *resultadoF;
 
 /* DEBUG */
 // static void imprimirColoresDisponibles(char *ColoresDisponibles, Grafo g)
@@ -15,23 +16,10 @@ u32 *AuxComp;
 //     printf("\n");
 // }
 
-static int comparar(const void *a, const void *b) {
-   int elemento1 = *(const int *)a;
-   int elemento2 = *(const int *)b;
-   
-   if (elemento1 > elemento2) {
-      return -1;
-   } else if (elemento1 < elemento2) {
-      return 1;
-   } else {
-      return 0;
-   }
-}
-
-static int compararVal(const void *a, const void *b)
+static int compararColor(const void *a, const void *b)
 {
-    u32 a_val = AuxComp[*(u32 *)a];
-    u32 b_val = AuxComp[*(u32 *)b];
+    u32 a_val = AuxColor[*(u32 *)a];
+    u32 b_val = AuxColor[*(u32 *)b];
 
     return b_val - a_val;
 }
@@ -39,8 +27,8 @@ static int compararVal(const void *a, const void *b)
 static int compararColorParidad(const void *a, const void *b)
 {
     /* Primero los impares luego los pares. */
-    u32 a_color = AuxComp[*(u32 *)a];
-    u32 b_color = AuxComp[*(u32 *)b];
+    u32 a_color = AuxColor[*(u32 *)a];
+    u32 b_color = AuxColor[*(u32 *)b];
     bool a_paridad_color = (a_color % 2);
     bool b_paridad_color = (b_color % 2);
 
@@ -55,24 +43,32 @@ static int compararColorParidad(const void *a, const void *b)
         return 1;
 }
 
-u32* mapF(Grafo G,u32* Orden,u32* Color)
+static int compararResultadoF(const void *a, const void *b)
+{
+    u32 a_val = resultadoF[*(u32 *)a];
+    u32 b_val = resultadoF[*(u32 *)b];
+
+    return b_val - a_val;
+}
+
+u32 *mapF(Grafo G, u32 *Orden, u32 *Color)
 {
     u32 empieza = 0;
     u32 valAcumulado = 0;
     u32 *resultF = calloc(NumeroDeVertices(G), sizeof(u32));
 
-    for(u32 i=0; i<NumeroDeVertices(G)-1; i++)
+    for (u32 i = 0; i < NumeroDeVertices(G) - 1; i++)
     {
         // Tratamos el último elemento
-        if(i == (NumeroDeVertices(G)-1))
+        if (i == (NumeroDeVertices(G) - 1))
         {
-            if(Color[i] != Color[i-1])
+            if (Color[i] != Color[i - 1])
                 resultF[i] = Grado(Orden[i], G) * Color[i];
             else
             {
                 valAcumulado += Grado(Orden[i], G);
                 valAcumulado *= Color[i];
-                for(u32 j = empieza; j < (i+1); j++)
+                for (u32 j = empieza; j < (i + 1); j++)
                 {
                     resultF[j] = valAcumulado;
                 }
@@ -83,23 +79,22 @@ u32* mapF(Grafo G,u32* Orden,u32* Color)
         {
             valAcumulado += Grado(Orden[i], G);
 
-            if(Color[i] != Color[i+1])
+            if (Color[i] != Color[i + 1])
             {
                 valAcumulado *= Color[i];
-                
-                for(u32 j = empieza; j < (i+1); j++)
+
+                for (u32 j = empieza; j < (i + 1); j++)
                 {
                     resultF[j] = valAcumulado;
                 }
 
                 valAcumulado = 0;
-                empieza = i+1;
+                empieza = i + 1;
             }
         }
     }
 
     return resultF;
-
 }
 
 u32 Greedy(Grafo G, u32 *Orden, u32 *Color)
@@ -110,7 +105,7 @@ u32 Greedy(Grafo G, u32 *Orden, u32 *Color)
     y estan super optimizadas.
 
     Declaramos un "bitmap" del tamaño delta de G + 1 */
-    char *ColoresDisponibles = calloc(Delta(G) + 1, sizeof(u32));
+    bool *ColoresDisponibles = calloc(NumeroDeVertices(G), sizeof(bool));
     if (ColoresDisponibles == NULL)
     {
         printf("Error al reservar memoria para ColoresDisponibles\n");
@@ -128,17 +123,13 @@ u32 Greedy(Grafo G, u32 *Orden, u32 *Color)
         vertice_i = Orden[i];
 
         /* En el array los colores libres estan en 0 y los ocupados en 1 */
-        memset(ColoresDisponibles, 0, Delta(G) + 1);
+        memset(ColoresDisponibles, 0, NumeroDeVertices(G) * sizeof(bool));
 
         /* Seteamos los colores disponibles segun los colores de los vecinos del vertice_i */
         for (u32 j = 0; j < Grado(vertice_i, G); j++)
         {
-            if (j == 0)
-            {
-                ColoresDisponibles[0] = 1;
-            }
             /* Si un vertice tiene color entonces marco que color es en el bitmap */
-            else if (Color[IndiceVecino(j, vertice_i, G)] != NC)
+            if (Color[IndiceVecino(j, vertice_i, G)] != NC)
             {
                 ColoresDisponibles[Color[IndiceVecino(j, vertice_i, G)]] = 1;
             }
@@ -156,13 +147,13 @@ u32 Greedy(Grafo G, u32 *Orden, u32 *Color)
         }
 
         /* Actualizo numero de colores a retornar */
-        if (menor_color_disponible > numero_colores)
+        if (menor_color_disponible + 1 > numero_colores)
         {
-            numero_colores = menor_color_disponible;
+            numero_colores = menor_color_disponible + 1;
         }
 
         /* Seteamos el color */
-        Color[i] = menor_color_disponible;
+        Color[vertice_i] = menor_color_disponible;
     }
 
     return numero_colores;
@@ -174,24 +165,22 @@ u32 Greedy(Grafo G, u32 *Orden, u32 *Color)
 
 char OrdenImparPar(u32 n, u32 *Orden, u32 *Color)
 {
-    AuxComp = Color;
+    AuxColor = Color;
     qsort(Orden, n, sizeof(u32), compararColorParidad);
     return (char)0;
 }
 
-char OrdenConReferencia(u32 n, u32 *ord, u32 *ref)
+char OrdenJedi(Grafo G, u32 *Orden, u32 *Color)
 {
-    AuxComp = ref;
-    qsort(ord, n, sizeof(u32), compararVal);
-    return (char)0;
-}
+    /* Ordeno por color */
+    qsort(Orden, NumeroDeVertices(G), sizeof(u32), compararColor);
 
-char OrdenJedi(Grafo G,u32* Orden,u32* Color)
-{
-    OrdenConReferencia(NumeroDeVertices(G), Orden, Color);
-    qsort(Color, NumeroDeVertices(G), sizeof(u32), comparar);
-    u32 *resultF = mapF(G, Orden, Color);
-    OrdenConReferencia(NumeroDeVertices(G), Orden, resultF);
-    free(resultF);
+    /* Guardo para cada vertice el resultado de F segun su color */
+    resultadoF = crearResultadoF(G, Orden, Color);
+
+    /* Ordeno por resultado de F */
+    qsort(Orden, NumeroDeVertices(G), sizeof(u32), compararResultadoF);
+
+    free(resultadoF);
     return 0;
 }
