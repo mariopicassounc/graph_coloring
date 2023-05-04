@@ -18,10 +18,10 @@ u32 *resultadoF;
 
 static int compararColor(const void *a, const void *b)
 {
-    u32 a_val = AuxColor[*(u32 *)a];
-    u32 b_val = AuxColor[*(u32 *)b];
+    u32 a_color = AuxColor[*(u32 *)a];
+    u32 b_color = AuxColor[*(u32 *)b];
 
-    return b_val - a_val;
+    return b_color - a_color;
 }
 
 static int compararColorParidad(const void *a, const void *b)
@@ -45,51 +45,55 @@ static int compararColorParidad(const void *a, const void *b)
 
 static int compararResultadoF(const void *a, const void *b)
 {
-    u32 a_val = resultadoF[*(u32 *)a];
-    u32 b_val = resultadoF[*(u32 *)b];
+    u32 a_res = resultadoF[*(u32 *)a];
+    u32 b_res = resultadoF[*(u32 *)b];
 
-    return b_val - a_val;
+    return b_res - a_res;
 }
 
-u32 *mapF(Grafo G, u32 *Orden, u32 *Color)
+u32 *crearResultadoF(Grafo G, u32 *Orden, u32 *Color)
 {
-    u32 empieza = 0;
-    u32 valAcumulado = 0;
+    /* Devuelve memoria a liberar por el usuario 
+    Crea un array de tamaño NumeroDeVertices(G) donde cada posicion es el resultado de F para el color de ese vertice
+    O(2n)
+    */
     u32 *resultF = calloc(NumeroDeVertices(G), sizeof(u32));
+    u32 vertice_i;
+    u32 vertice_anterior;
+    u32 sumaGrados = 0;
+    u32 contadorColores = 0;
+    u32 resultado = 0;
 
-    for (u32 i = 0; i < NumeroDeVertices(G) - 1; i++)
+    for (u32 i = 1; i < NumeroDeVertices(G); i++)
     {
-        // Tratamos el último elemento
-        if (i == (NumeroDeVertices(G) - 1))
+        vertice_i = Orden[i];
+        vertice_anterior = Orden[i - 1];
+        /* Acumulo la suma de grados */
+        sumaGrados += Grado(vertice_anterior, G);
+        contadorColores++;
+        
+        /* Si cambia de color entonces calculo el resultado de F */
+        if (Color[vertice_i] != Color[vertice_anterior])
         {
-            if (Color[i] != Color[i - 1])
-                resultF[i] = Grado(Orden[i], G) * Color[i];
-            else
+            /* Calculo el resultado de F */
+            resultado = sumaGrados * Color[vertice_anterior];
+            /* Guardo el resultado de F para el color para todos los vertices que tengan ese mismo color */
+            for (u32 j = 0; j < contadorColores; j++)
             {
-                valAcumulado += Grado(Orden[i], G);
-                valAcumulado *= Color[i];
-                for (u32 j = empieza; j < (i + 1); j++)
-                {
-                    resultF[j] = valAcumulado;
-                }
+                resultF[Orden[(i - contadorColores) + j ]] = resultado;
             }
+            /* Reseteo la suma de grados y el contador de colores */
+            sumaGrados = 0;
+            contadorColores = 0;
         }
-        // Tratamos el resto de los elementos
-        else
+        
+        /* Calculo el resultado de F para el ultimo color */
+        if (i == NumeroDeVertices(G) - 1)
         {
-            valAcumulado += Grado(Orden[i], G);
-
-            if (Color[i] != Color[i + 1])
+            resultado = sumaGrados * Color[vertice_i];
+            for (u32 j = 0; j < contadorColores + 1; j++)
             {
-                valAcumulado *= Color[i];
-
-                for (u32 j = empieza; j < (i + 1); j++)
-                {
-                    resultF[j] = valAcumulado;
-                }
-
-                valAcumulado = 0;
-                empieza = i + 1;
+                resultF[Orden[(i - contadorColores) + j ]] = resultado;
             }
         }
     }
